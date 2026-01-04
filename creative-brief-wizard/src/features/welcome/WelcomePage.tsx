@@ -1,268 +1,256 @@
 import { useState } from 'react';
 import { useSession } from '../../hooks/useSession';
-import { Clock, Sparkles, Users, FileText } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
+import { WorkshopAutoFillService } from '../../services/ai/WorkshopAutoFillService';
 
 /**
- * Welcome screen - introduces the app and collects initial project context
- * First screen users see when starting a new brief
+ * Welcome screen - minimal prompt-based interface with AI auto-fill
+ * Inspired by modern AI tools like ChatGPT, Gemini, and Figma Make
  */
 export function WelcomePage() {
-  const { state, updateProjectContext, setPhase } = useSession();
-  const [projectName, setProjectName] = useState(state.projectContext.projectName);
-  const [projectDescription, setProjectDescription] = useState(
-    state.projectContext.projectDescription
-  );
-  const [stakeholders, setStakeholders] = useState(state.projectContext.stakeholders);
-  const [constraints, setConstraints] = useState(state.projectContext.constraints);
-  const [timeline, setTimeline] = useState(state.projectContext.timeline);
-  const [duration, setDuration] = useState(state.projectContext.duration);
-  const [durationError, setDurationError] = useState('');
+  const { state, updateProjectContext, updateCustomerDiscovery, addStickyNote, setPhase } = useSession();
+  const [projectPrompt, setProjectPrompt] = useState('');
+  const [duration, setDuration] = useState(60);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Validate duration input
-  const validateDuration = (value: number): boolean => {
-    if (!value || value < 15) {
-      setDurationError('Workshop duration must be at least 15 minutes');
-      return false;
+  const handleBegin = async () => {
+    setError(null);
+    setIsGenerating(true);
+
+    try {
+      // Get API key from environment
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY || 'mock';
+      
+      // Create auto-fill service
+      const autoFillService = new WorkshopAutoFillService(apiKey);
+      
+      // Generate content from prompt
+      const result = await autoFillService.generateFromPrompt(projectPrompt);
+      
+      // Apply results to session
+      const updates = autoFillService.applyToSession(result, state);
+      
+      // Update all sections
+      if (updates.projectContext) {
+        updateProjectContext({
+          ...updates.projectContext,
+          duration,
+          completed: true,
+        });
+      }
+      
+      if (updates.customerDiscovery) {
+        updateCustomerDiscovery(updates.customerDiscovery);
+      }
+      
+      if (updates.stickyNotesDiverge && updates.stickyNotesDiverge.notes) {
+        // Add each sticky note individually
+        updates.stickyNotesDiverge.notes.forEach((note) => {
+          addStickyNote(note);
+        });
+      }
+      
+      // Navigate to discovery phase
+      setPhase('customer-discovery');
+    } catch (err) {
+      console.error('Auto-fill error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate workshop content');
+      setIsGenerating(false);
     }
-    if (value > 480) {
-      // 8 hours max
-      setDurationError('Workshop duration cannot exceed 8 hours (480 minutes)');
-      return false;
-    }
-    setDurationError('');
-    return true;
   };
 
-  // Handle duration input change
-  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const numValue = value === '' ? 0 : parseInt(value, 10);
-    setDuration(numValue);
+  const canProceed = projectPrompt.trim().length > 10 && !isGenerating;
 
-    // Only validate if user has entered a value
-    if (value !== '') {
-      validateDuration(numValue);
-    } else {
-      setDurationError('');
-    }
-  };
-
-  // Calculate estimated end time based on duration
-  const calculateEstimatedEndTime = (): string => {
-    if (!duration || duration <= 0) return '';
-    const now = new Date();
-    const endTime = new Date(now.getTime() + duration * 60000);
-
-    return endTime.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
-
-  const handleBegin = () => {
-    // Validate duration before proceeding
-    if (!validateDuration(duration)) {
-      return;
-    }
-    updateProjectContext({
-      projectName,
-      projectDescription,
-      stakeholders,
-      constraints,
-      timeline,
-      duration,
-      completed: true,
-    });
-    setPhase('customer-discovery');
-  };
-
-  // Validation disabled for QC testing - allow skipping fields
-  const canProceed = true; // projectName.trim() !== '' && projectDescription.trim() !== '';
+  // Example prompts for inspiration
+  const examplePrompts = [
+    "Create a video campaign for a new AI productivity app launching at a tech conference",
+    "Design a brand identity for an eco-friendly water bottle startup targeting millennials",
+    "Develop a social media campaign for a local coffee shop's seasonal menu launch",
+    "Build a website for a freelance photographer specializing in wedding photography",
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <div className="container">
-        {/* Header */}
-        <div className="text-center mb-12 fade-in">
-          <div
-            className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 elevated"
-            style={{ backgroundColor: 'var(--color-primary)' }}
-          >
-            <Sparkles className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Creative Discovery Workshop</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto text-balance">
-            A guided workshop to discover creative requirements and generate a professional brief
-          </p>
-        </div>
-
-        {/* Features Overview */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <div className="card stagger-item">
-            <div className="flex items-center mb-3">
-              <Clock className="w-6 h-6 mr-2" style={{ color: 'var(--color-primary)' }} />
-              <h3 className="font-semibold text-gray-900">Time-Boxed</h3>
-            </div>
-            <p className="text-sm text-gray-600">
-              Guided exercises with timers keep sessions focused and efficient (30-40 minutes total)
-            </p>
-          </div>
-
-          <div className="card stagger-item">
-            <div className="flex items-center mb-3">
-              <Users className="w-6 h-6 mr-2" style={{ color: 'var(--color-primary)' }} />
-              <h3 className="font-semibold text-gray-900">Solo or Group</h3>
-            </div>
-            <p className="text-sm text-gray-600">
-              Use independently for reflection or in facilitated meetings with stakeholders
-            </p>
-          </div>
-
-          <div className="card stagger-item">
-            <div className="flex items-center mb-3">
-              <FileText className="w-6 h-6 mr-2" style={{ color: 'var(--color-primary)' }} />
-              <h3 className="font-semibold text-gray-900">Professional Output</h3>
-            </div>
-            <p className="text-sm text-gray-600">
-              Generate a downloadable DOCX brief ready for designers and stakeholders
-            </p>
-          </div>
-        </div>
-
-        {/* Project Context Form */}
-        <div className="card scale-in">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Project Information</h2>
-          <div className="space-y-6">
-            {/* Project Name */}
-            <div>
-              <label htmlFor="projectName" className="form-label">
-                Project Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="projectName"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Product Launch Video Campaign"
-                className="form-input"
-              />
-            </div>
-
-            {/* Project Description */}
-            <div>
-              <label htmlFor="projectDescription" className="form-label">
-                Project Description <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                id="projectDescription"
-                value={projectDescription}
-                onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="We need a 60-second promotional video to announce our new AI-powered productivity app. The video will be used across social media, our website, and at industry conferences. We want to showcase the app's key features while connecting emotionally with busy professionals who struggle with task management."
-                rows={4}
-                className="form-textarea"
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                This will appear in the brief's Project Overview section
-              </p>
-            </div>
-
-            {/* Stakeholders */}
-            <div>
-              <label htmlFor="stakeholders" className="form-label">
-                Key Stakeholders <span className="text-gray-400">(Optional)</span>
-              </label>
-              <textarea
-                id="stakeholders"
-                value={stakeholders}
-                onChange={(e) => setStakeholders(e.target.value)}
-                placeholder="CMO Sarah Chen (final approval), Product Manager David Rodriguez (technical accuracy), Brand Director Maya Patel (brand compliance), and our target users: project managers aged 28-45 in tech and consulting industries"
-                rows={2}
-                className="form-textarea"
-              />
-            </div>
-
-            {/* Constraints */}
-            <div>
-              <label htmlFor="constraints" className="form-label">
-                Known Constraints <span className="text-gray-400">(Optional)</span>
-              </label>
-              <textarea
-                id="constraints"
-                value={constraints}
-                onChange={(e) => setConstraints(e.target.value)}
-                placeholder="Budget: $25,000 for production. Must use company brand colors (navy blue #1A365D, teal #0694A2). Video must be under 60 seconds for Instagram/LinkedIn. Must include accessibility features (captions, audio descriptions). No stock footage - all content must be original or app screen recordings."
-                rows={3}
-                className="form-textarea"
-              />
-            </div>
-
-            {/* Timeline */}
-            <div>
-              <label htmlFor="timeline" className="form-label">
-                Timeline <span className="text-gray-400">(Optional)</span>
-              </label>
-              <input
-                type="text"
-                id="timeline"
-                value={timeline}
-                onChange={(e) => setTimeline(e.target.value)}
-                placeholder="Kickoff: February 1, 2026 | First draft: February 20, 2026 | Final delivery: March 10, 2026 | Public launch: March 25, 2026 at TechCon Conference"
-                className="form-input"
-              />
-            </div>
-
-            {/* Workshop Duration */}
-            <div>
-              <label htmlFor="duration" className="form-label">
-                Workshop Duration <span className="text-red-500">*</span>
-              </label>
-              <div className="space-y-2">
-                <input
-                  type="number"
-                  id="duration"
-                  value={duration || ''}
-                  onChange={handleDurationChange}
-                  placeholder="90"
-                  min="15"
-                  max="480"
-                  className={`form-input ${durationError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
-                />
-                {durationError && <p className="text-sm text-red-500">{durationError}</p>}
-                {duration && duration > 0 && !durationError && (
-                  <p className="text-sm text-gray-500">
-                    Estimated completion time:{' '}
-                    <span className="font-semibold text-gray-700">
-                      {calculateEstimatedEndTime()}
-                    </span>
-                  </p>
-                )}
-              </div>
-              <p className="text-sm text-gray-500 mt-1">
-                Enter workshop duration in minutes (15-480 minutes). This helps schedule the
-                discovery workshop effectively.
-              </p>
-            </div>
-          </div>
-
-          {/* Begin Button */}
-          <div className="mt-8 flex justify-end">
-            <button
-              onClick={handleBegin}
-              disabled={!canProceed}
-              className={`btn ${canProceed ? 'btn-primary' : 'btn-secondary'}`}
-              style={!canProceed ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
+      {/* Header */}
+      <header className="w-full px-6 py-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-primary)' }}
             >
-              Begin Discovery Process
-            </button>
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-semibold text-gray-900">Creative Discovery Workshop</span>
           </div>
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            {showAdvanced ? 'Simple' : 'Advanced'}
+          </button>
         </div>
+      </header>
 
-        {/* Footer Note */}
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>Your progress is automatically saved. You can return anytime to continue.</p>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
+        <div className="max-w-3xl w-full">
+          {/* Hero Text */}
+          <div className="text-center mb-12 fade-in">
+            <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
+              Discover your creative brief
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Describe your project in a few sentences. Our AI will generate a complete workshop
+              with intelligent suggestions for you to review and refine.
+            </p>
+          </div>
+
+          {/* Prompt Input */}
+          <div className="scale-in">
+            <div className="relative">
+              <textarea
+                value={projectPrompt}
+                onChange={(e) => setProjectPrompt(e.target.value)}
+                disabled={isGenerating}
+                placeholder="Describe your creative project... (e.g., 'Create a video campaign for a new AI productivity app launching at a tech conference')"
+                className={`w-full px-6 py-5 text-base rounded-2xl border-2 ${
+                  error ? 'border-red-300' : 'border-gray-200'
+                } focus:border-blue-500 focus:outline-none resize-none transition-all shadow-sm hover:shadow-md focus:shadow-lg ${
+                  isGenerating ? 'bg-gray-50 cursor-not-allowed' : ''
+                }`}
+                rows={4}
+                style={{ fontFamily: 'inherit' }}
+              />
+              
+              {/* Character count */}
+              <div className="absolute bottom-4 right-4 text-xs text-gray-400">
+                {projectPrompt.length} characters
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-xs text-red-600 mt-1">
+                  Try simplifying your prompt or check your internet connection.
+                </p>
+              </div>
+            )}
+
+            {/* Duration Selector (Simple) */}
+            {!showAdvanced && !isGenerating && (
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <label className="text-sm text-gray-600">Workshop duration:</label>
+                <select
+                  value={duration}
+                  onChange={(e) => setDuration(parseInt(e.target.value))}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                >
+                  <option value={30}>30 minutes</option>
+                  <option value={45}>45 minutes</option>
+                  <option value={60}>60 minutes</option>
+                  <option value={90}>90 minutes</option>
+                  <option value={120}>2 hours</option>
+                </select>
+              </div>
+            )}
+
+            {/* Advanced Options */}
+            {showAdvanced && !isGenerating && (
+              <div className="mt-6 p-6 bg-white rounded-xl border border-gray-200 space-y-4 slide-in">
+                <h3 className="font-semibold text-gray-900 text-sm">Advanced Options</h3>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Workshop Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={duration}
+                    onChange={(e) => setDuration(parseInt(e.target.value) || 60)}
+                    min="15"
+                    max="480"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Action Button */}
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={handleBegin}
+                disabled={!canProceed}
+                className={`px-8 py-4 rounded-xl font-semibold text-base transition-all flex items-center gap-2 ${
+                  canProceed
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-100'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Generating with AI...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Generate Workshop with AI
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Helper Text */}
+            {!canProceed && !isGenerating && projectPrompt.length > 0 && (
+              <p className="mt-3 text-center text-sm text-gray-500">
+                Please provide a bit more detail (at least 10 characters)
+              </p>
+            )}
+
+            {/* AI Generation Info */}
+            {isGenerating && (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-600">
+                  Our AI is analyzing your project and generating personalized workshop content...
+                </p>
+                <p className="text-xs text-gray-500 mt-1">This usually takes 5-10 seconds</p>
+              </div>
+            )}
+          </div>
+
+          {/* Example Prompts */}
+          {!isGenerating && (
+            <div className="mt-16 fade-in">
+              <p className="text-center text-sm text-gray-500 mb-4">Try an example:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {examplePrompts.map((example, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setProjectPrompt(example)}
+                    className="text-left px-4 py-3 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    "{example}"
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full px-6 py-4 text-center">
+        <p className="text-xs text-gray-500">
+          {isGenerating 
+            ? 'Powered by OpenAI • Generating your personalized workshop...'
+            : 'Powered by OpenAI • Generate a complete workshop in seconds'}
+        </p>
+      </footer>
     </div>
   );
 }

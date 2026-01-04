@@ -67,18 +67,18 @@ export const CustomerDiscoveryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="container">
         {/* Header */}
-        <div className="mb-8 fade-in">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Customer Discovery</h1>
-          <p className="text-gray-600 text-balance">
+        <div className="mb-6 fade-in">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Customer Discovery</h1>
+          <p className="text-sm text-gray-600 text-balance">
             Answer these four fundamental questions to clarify the project's purpose and audience.
           </p>
         </div>
 
         {/* Progress Indicator */}
-        <div className="mb-8 slide-in">
+        <div className="mb-6 slide-in">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">
               Question {currentQuestionIndex + 1} of {questions.length}
@@ -87,7 +87,7 @@ export const CustomerDiscoveryPage: React.FC = () => {
               {questions.filter((q) => q.answer.trim().length > 0).length} answered
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
             <div
               className="h-2 rounded-full smooth-transition"
               style={{

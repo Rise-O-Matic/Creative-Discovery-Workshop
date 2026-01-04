@@ -99,7 +99,7 @@ const PhaseMarker: React.FC<PhaseMarkerProps> = ({
     >
       {/* Marker Circle */}
       <div
-        className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${getMarkerStyle()}`}
+        className={`relative w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${getMarkerStyle()}`}
         onClick={isLocked ? undefined : onClick}
         role="button"
         aria-label={`${config.label} phase`}
@@ -107,7 +107,7 @@ const PhaseMarker: React.FC<PhaseMarkerProps> = ({
       >
         {/* Icon */}
         {isCompleted && (
-          <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -116,13 +116,13 @@ const PhaseMarker: React.FC<PhaseMarkerProps> = ({
           </svg>
         )}
         {isCurrent && (
-          <span className="text-xs font-bold text-blue-500">{config.shortLabel}</span>
+          <span className="text-[10px] font-bold text-blue-500">{config.shortLabel}</span>
         )}
         {isNext && (
-          <span className="text-xs font-semibold text-white">{config.shortLabel}</span>
+          <span className="text-[10px] font-semibold text-white">{config.shortLabel}</span>
         )}
         {isLocked && (
-          <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
@@ -133,7 +133,7 @@ const PhaseMarker: React.FC<PhaseMarkerProps> = ({
       </div>
 
       {/* Label */}
-      <div className="mt-1 text-xs text-white font-medium whitespace-nowrap">
+      <div className="mt-0.5 text-[10px] text-white font-medium whitespace-nowrap">
         {config.shortLabel}
       </div>
 
@@ -265,20 +265,20 @@ export const GlobalTimeline: React.FC = () => {
       className="w-full shadow-lg transition-colors duration-500"
       style={{ backgroundColor: getPacingColor() }}
     >
-      <div className="px-6 py-4">
+      <div className="px-4 py-2.5">
         {/* Header: Meeting Time Display */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-4">
             <div>
-              <div className="text-xs text-white opacity-80 uppercase tracking-wide">
+              <div className="text-[10px] text-white opacity-80 uppercase tracking-wide">
                 Meeting Time
               </div>
-              <div className="text-2xl font-mono font-bold text-white tabular-nums">
+              <div className="text-lg font-mono font-bold text-white tabular-nums">
                 {formatMs(currentElapsedMs)} / {formatMs(expectedMs)}
               </div>
             </div>
             {timerState.isPaused && (
-              <div className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-white text-sm font-semibold">
+              <div className="px-2 py-0.5 bg-white bg-opacity-20 rounded-full text-white text-xs font-semibold">
                 PAUSED
               </div>
             )}
@@ -288,11 +288,11 @@ export const GlobalTimeline: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={handlePauseResume}
-              className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-colors font-medium text-sm"
+              className="px-3 py-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-md transition-colors font-medium text-xs"
               aria-label={timerState.isPaused ? 'Resume timer' : 'Pause timer'}
             >
               {timerState.isPaused ? (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
@@ -300,7 +300,7 @@ export const GlobalTimeline: React.FC = () => {
                   />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
@@ -311,7 +311,7 @@ export const GlobalTimeline: React.FC = () => {
             </button>
             <button
               onClick={handleReset}
-              className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-colors font-medium text-sm"
+              className="px-3 py-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-md transition-colors font-medium text-xs"
               aria-label="Reset timer"
             >
               Reset
@@ -322,7 +322,7 @@ export const GlobalTimeline: React.FC = () => {
         {/* Timeline Container */}
         <div className="relative">
           {/* Phase Markers Row */}
-          <div className="relative h-16 mb-3">
+          <div className="relative h-12 mb-2">
             {phaseConfigs.map((config, index) => {
               const { isCompleted, isCurrent, isNext, isLocked } = getPhaseState(index);
               const completedTimeMs = isCompleted ? getPhaseElapsedMs(config.phase) : undefined;
@@ -344,7 +344,7 @@ export const GlobalTimeline: React.FC = () => {
           </div>
 
           {/* Timeline Bar Container */}
-          <div className="relative h-4 bg-white bg-opacity-20 rounded-full overflow-visible">
+          <div className="relative h-3 bg-white bg-opacity-20 rounded-full overflow-visible">
             {/* Red Fill Bar (Time Elapsed) */}
             <div
               className="absolute left-0 top-0 h-full bg-red-500 bg-opacity-80 transition-all duration-1000 ease-linear rounded-full"
