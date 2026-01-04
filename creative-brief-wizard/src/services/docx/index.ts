@@ -1,0 +1,1 @@
+export { BriefGenerator } from './BriefGenerator';
