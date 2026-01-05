@@ -25,16 +25,17 @@ function calculatePhaseConfigs(workshopDurationMinutes: number): PhaseConfig[] {
   const baseDurations: Omit<PhaseConfig, 'expectedDurationMs'>[] = [
     { phase: 'project-context', label: 'Welcome', shortLabel: 'W', color: '#10b981' },
     { phase: 'customer-discovery', label: 'Discovery', shortLabel: 'D', color: '#3b82f6' },
-    { phase: 'sticky-notes-diverge', label: 'Diverge', shortLabel: 'Dv', color: '#8b5cf6' },
-    { phase: 'sticky-notes-converge', label: 'Converge', shortLabel: 'C', color: '#ec4899' },
-    { phase: 'spot-exercises', label: 'Exercises', shortLabel: 'SE', color: '#f59e0b' },
+    // Sticky notes phases temporarily shelved
+    // { phase: 'sticky-notes-diverge', label: 'Diverge', shortLabel: 'Dv', color: '#8b5cf6' },
+    // { phase: 'sticky-notes-converge', label: 'Converge', shortLabel: 'C', color: '#ec4899' },
+    // { phase: 'spot-exercises', label: 'Exercises', shortLabel: 'SE', color: '#f59e0b' },
     { phase: 'prioritization', label: 'Prioritize', shortLabel: 'P', color: '#14b8a6' },
     { phase: 'synthesis-review', label: 'Review', shortLabel: 'R', color: '#6366f1' },
     { phase: 'brief-complete', label: 'Complete', shortLabel: 'B', color: '#22c55e' },
   ];
 
   // Base proportions (totals to 60 minutes)
-  const baseProportions = [5, 15, 10, 10, 10, 5, 3, 2]; // minutes
+  const baseProportions = [5, 30, 15, 8, 2]; // minutes - redistributed without sticky notes
   const totalBaseMinutes = baseProportions.reduce((sum, val) => sum + val, 0);
 
   return baseDurations.map((phase, index) => ({

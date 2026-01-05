@@ -5,9 +5,10 @@ import { MeetingTimerProvider } from './contexts/MeetingTimerContext';
 import { useSession } from './hooks/useSession';
 import { WelcomePage } from './features/welcome/WelcomePage';
 import { CustomerDiscoveryPage } from './features/discovery/CustomerDiscoveryPage';
-import { DivergePage } from './features/diverge/DivergePage';
-import { ConvergePage } from './features/converge/ConvergePage';
-import { SpotExercisesPage } from './features/spot-exercises/SpotExercisesPage';
+// Sticky notes phases temporarily shelved
+// import { DivergePage } from './features/diverge/DivergePage';
+// import { ConvergePage } from './features/converge/ConvergePage';
+// import { SpotExercisesPage } from './features/spot-exercises/SpotExercisesPage';
 import PrioritizationPage from './features/prioritization/PrioritizationPage';
 import { SynthesisReviewPage } from './features/review/SynthesisReviewPage';
 import { BriefCompletePage } from './features/brief/BriefCompletePage';
@@ -23,12 +24,13 @@ function PhaseRouter() {
       return <WelcomePage />;
     case 'customer-discovery':
       return <CustomerDiscoveryPage />;
-    case 'sticky-notes-diverge':
-      return <DivergePage />;
-    case 'sticky-notes-converge':
-      return <ConvergePage />;
-    case 'spot-exercises':
-      return <SpotExercisesPage />;
+    // Sticky notes phases temporarily shelved
+    // case 'sticky-notes-diverge':
+    //   return <DivergePage />;
+    // case 'sticky-notes-converge':
+    //   return <ConvergePage />;
+    // case 'spot-exercises':
+    //   return <SpotExercisesPage />;
     case 'prioritization':
       return <PrioritizationPage />;
     case 'synthesis-review':

@@ -228,6 +228,31 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     saveSession(state);
   }, [state]);
 
+  // Validate current phase on mount - fix if stuck on removed phase
+  useEffect(() => {
+    const validPhases: SessionPhase[] = [
+      'project-context',
+      'customer-discovery',
+      'prioritization',
+      'synthesis-review',
+      'brief-complete',
+    ];
+    
+    const removedPhases: SessionPhase[] = [
+      'sticky-notes-diverge',
+      'sticky-notes-converge',
+      'sticky-notes-naming',
+      'sticky-notes-synthesis',
+      'spot-exercises',
+    ];
+
+    // If current phase is one of the removed phases, reset to customer-discovery
+    if (removedPhases.includes(state.currentPhase)) {
+      console.log(`Resetting from removed phase ${state.currentPhase} to customer-discovery`);
+      setState((prev) => ({ ...prev, currentPhase: 'customer-discovery' }));
+    }
+  }, []); // Only run once on mount
+
   // Update last modified timestamp on every state change
   const updateState = useCallback((updater: (prev: SessionState) => SessionState) => {
     setState((prev) => ({
@@ -246,14 +271,15 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const nextPhase = useCallback(() => {
     updateState((prev) => {
+      // Only active phases (sticky notes phases temporarily shelved)
       const phases: SessionPhase[] = [
         'project-context',
         'customer-discovery',
-        'sticky-notes-diverge',
-        'sticky-notes-converge',
-        'sticky-notes-naming',
-        'sticky-notes-synthesis',
-        'spot-exercises',
+        // 'sticky-notes-diverge',
+        // 'sticky-notes-converge',
+        // 'sticky-notes-naming',
+        // 'sticky-notes-synthesis',
+        // 'spot-exercises',
         'prioritization',
         'synthesis-review',
         'brief-complete',
