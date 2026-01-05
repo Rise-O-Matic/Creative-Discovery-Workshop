@@ -22,135 +22,45 @@ import {
 interface PhaseConfig {
   phase: SessionPhase;
   label: string;
-  shortLabel: string;
   icon: React.ReactNode;
   color: string;
-  expectedDurationMs: number;
 }
 
-/**
- * Calculate phase durations based on total workshop duration
- */
-function calculatePhaseConfigs(workshopDurationMinutes: number): PhaseConfig[] {
-  const baseDurations: Omit<PhaseConfig, 'expectedDurationMs'>[] = [
-    {
-      phase: 'project-context',
-      label: 'Welcome',
-      shortLabel: 'W',
-      icon: <Sparkles className="w-5 h-5" />,
-      color: '#10b981',
-    },
-    {
-      phase: 'customer-discovery',
-      label: 'Discovery',
-      shortLabel: 'D',
-      icon: <HelpCircle className="w-5 h-5" />,
-      color: '#3b82f6',
-    },
-    {
-      phase: 'prioritization',
-      label: 'Prioritize',
-      shortLabel: 'P',
-      icon: <TrendingUp className="w-5 h-5" />,
-      color: '#14b8a6',
-    },
-    {
-      phase: 'synthesis-review',
-      label: 'Review',
-      shortLabel: 'R',
-      icon: <Users className="w-5 h-5" />,
-      color: '#6366f1',
-    },
-    {
-      phase: 'brief-complete',
-      label: 'Complete',
-      shortLabel: 'B',
-      icon: <CheckCircle2 className="w-5 h-5" />,
-      color: '#22c55e',
-    },
-  ];
-
-  // Base proportions (totals to 60 minutes)
-  const baseProportions = [5, 30, 15, 8, 2]; // minutes - redistributed without sticky notes
-  const totalBaseMinutes = baseProportions.reduce((sum, val) => sum + val, 0);
-
-  return baseDurations.map((phase, index) => ({
-    ...phase,
-    expectedDurationMs:
-      (baseProportions[index] / totalBaseMinutes) * workshopDurationMinutes * 60 * 1000,
-  }));
-}
+const PHASES: PhaseConfig[] = [
+  {
+    phase: 'project-context',
+    label: 'Welcome',
+    icon: <Sparkles className="w-4 h-4" />,
+    color: '#10b981',
+  },
+  {
+    phase: 'customer-discovery',
+    label: 'Discovery',
+    icon: <HelpCircle className="w-4 h-4" />,
+    color: '#3b82f6',
+  },
+  {
+    phase: 'prioritization',
+    label: 'Prioritize',
+    icon: <TrendingUp className="w-4 h-4" />,
+    color: '#14b8a6',
+  },
+  {
+    phase: 'synthesis-review',
+    label: 'Review',
+    icon: <Users className="w-4 h-4" />,
+    color: '#6366f1',
+  },
+  {
+    phase: 'brief-complete',
+    label: 'Complete',
+    icon: <CheckCircle2 className="w-4 h-4" />,
+    color: '#22c55e',
+  },
+];
 
 // ============================================================================
-// Phase Marker Component (Top Timeline Style)
-// ============================================================================
-
-interface PhaseMarkerProps {
-  config: PhaseConfig;
-  isCompleted: boolean;
-  isCurrent: boolean;
-  onClick: () => void;
-}
-
-const PhaseMarker: React.FC<PhaseMarkerProps> = ({
-  config,
-  isCompleted,
-  isCurrent,
-  onClick,
-}) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-center gap-2 transition-all duration-200 group`}
-    >
-      {/* Icon Circle */}
-      <div
-        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
-          isCurrent
-            ? 'ring-4 ring-offset-2 scale-110 shadow-lg'
-            : isCompleted
-              ? 'bg-opacity-100 shadow-md'
-              : 'bg-opacity-60 shadow-sm'
-        }`}
-        style={{
-          backgroundColor: config.color,
-          color: 'white',
-        }}
-      >
-        {config.icon}
-      </div>
-
-      {/* Label */}
-      <div className="text-center">
-        <p
-          className={`text-xs font-semibold transition-colors ${
-            isCurrent ? 'text-gray-900' : isCompleted ? 'text-gray-700' : 'text-gray-500'
-          }`}
-        >
-          {config.label}
-        </p>
-      </div>
-
-      {/* Completion Indicator */}
-      {isCompleted && (
-        <div className="absolute -top-1 -right-1">
-          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-        </div>
-      )}
-    </button>
-  );
-};
-
-// ============================================================================
-// GlobalTimeline Component (Top Position)
+// GlobalTimeline Component - String of Beads
 // ============================================================================
 
 export const GlobalTimeline: React.FC = () => {
@@ -174,36 +84,24 @@ export const GlobalTimeline: React.FC = () => {
     }
   }, [timerState.meetingStartTime, state.projectContext.duration, startMeeting]);
 
-  // Calculate phase configurations
-  const phaseConfigs = calculatePhaseConfigs(state.projectContext.duration);
-  const currentPhaseIndex = phaseConfigs.findIndex((p) => p.phase === state.currentPhase);
-
-  // Calculate cumulative positions
-  // totalExpectedMs could be used for getPhasePosition calculation
-  // const totalExpectedMs = phaseConfigs.reduce((sum, p) => sum + p.expectedDurationMs, 0);
-  // getPhasePosition is not currently used but kept for future reference
-  // const getPhasePosition = (index: number): number => {
-  //   const cumulativeMs = phaseConfigs.slice(0, index).reduce((sum, p) => sum + p.expectedDurationMs, 0);
-  //   return (cumulativeMs / totalExpectedMs) * 100;
-  // };}
-
-  // Calculate elapsed time fill bar position
-  const getElapsedPosition = (): number => {
-    return Math.min(100, getProgressPercentage());
-  };
+  const currentPhaseIndex = PHASES.findIndex((p) => p.phase === state.currentPhase);
+  const currentElapsedMs = getCurrentElapsedMs();
+  const expectedMs = timerState.expectedDurationMs;
+  const progressPercent = getProgressPercentage();
 
   // Determine pacing color
   const getPacingColor = (): string => {
-    const status = getPacingStatus(currentPhaseIndex, phaseConfigs.length);
+    const status = getPacingStatus(currentPhaseIndex, PHASES.length);
     if (status === 'over') return '#dc2626'; // red
     if (status === 'behind') return '#f59e0b'; // amber
     return '#10b981'; // green
   };
 
-  // Handle phase navigation - FREE NAVIGATION (no locking)
+  // Handle phase navigation
   const handlePhaseClick = (targetPhase: SessionPhase) => {
     setPhase(targetPhase);
-    addToast(`Navigated to ${phaseConfigs.find((p) => p.phase === targetPhase)?.label}`, 'info', 2000);
+    const phaseName = PHASES.find((p) => p.phase === targetPhase)?.label;
+    addToast(`Navigated to ${phaseName}`, 'info', 2000);
   };
 
   // Handle pause/resume
@@ -219,107 +117,123 @@ export const GlobalTimeline: React.FC = () => {
 
   // Handle reset
   const handleReset = () => {
-    if (confirm('Reset meeting timer? This will clear all time tracking data.')) {
+    if (confirm('Reset meeting timer?')) {
       resetMeeting();
       startMeeting(state.projectContext.duration);
       addToast('Meeting timer reset', 'success', 3000);
     }
   };
 
-  // Determine phase states
-  const getPhaseState = (index: number) => {
-    const isCompleted = index < currentPhaseIndex;
-    const isCurrent = index === currentPhaseIndex;
-
-    return { isCompleted, isCurrent };
-  };
-
-  const currentElapsedMs = getCurrentElapsedMs();
-  const expectedMs = timerState.expectedDurationMs;
-  const currentPhase = phaseConfigs[currentPhaseIndex];
-
   return (
-    <div className="w-full bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Top Row: Timer and Controls */}
-        <div className="flex items-center justify-between mb-8">
-          {/* Left: Time Display */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-700">
-              <span className="font-mono font-semibold text-lg">
-                {formatMs(currentElapsedMs)}
-              </span>
-              <span className="text-gray-400">/</span>
-              <span className="font-mono text-gray-600">
-                {formatMs(expectedMs)}
-              </span>
-            </div>
+    <div className="w-full bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        {/* Top row: Time and controls */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-sm font-semibold text-gray-700">
+              {formatMs(currentElapsedMs)}
+            </span>
+            <span className="text-gray-400 text-sm">/</span>
+            <span className="font-mono text-sm text-gray-600">
+              {formatMs(expectedMs)}
+            </span>
             {timerState.isPaused && (
-              <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+              <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded">
                 PAUSED
               </span>
             )}
           </div>
 
-          {/* Right: Controls */}
           <div className="flex items-center gap-2">
             <button
               onClick={handlePauseResume}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-gray-100 rounded transition-colors"
               title={timerState.isPaused ? 'Resume' : 'Pause'}
             >
               {timerState.isPaused ? (
-                <Play className="w-5 h-5 text-gray-600" />
+                <Play className="w-4 h-4 text-gray-600" />
               ) : (
-                <Pause className="w-5 h-5 text-gray-600" />
+                <Pause className="w-4 h-4 text-gray-600" />
               )}
             </button>
             <button
               onClick={handleReset}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-gray-100 rounded transition-colors"
               title="Reset"
             >
-              <RotateCcw className="w-5 h-5 text-gray-600" />
+              <RotateCcw className="w-4 h-4 text-gray-600" />
             </button>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full transition-all duration-300 rounded-full"
-              style={{
-                width: `${getElapsedPosition()}%`,
-                backgroundColor: getPacingColor(),
-              }}
-            />
+        {/* Timeline: String of Beads */}
+        <div className="relative h-12 flex items-center">
+          {/* Background line */}
+          <div className="absolute left-0 right-0 h-1 bg-gray-200 rounded-full" />
+
+          {/* Progress fill */}
+          <div
+            className="absolute left-0 h-1 rounded-full transition-all duration-300"
+            style={{
+              width: `${progressPercent}%`,
+              backgroundColor: getPacingColor(),
+            }}
+          />
+
+          {/* Beads (phase icons) */}
+          <div className="relative w-full flex items-center justify-between px-2">
+            {PHASES.map((phase, index) => {
+              const isCompleted = index < currentPhaseIndex;
+              const isCurrent = index === currentPhaseIndex;
+
+              return (
+                <button
+                  key={phase.phase}
+                  onClick={() => handlePhaseClick(phase.phase)}
+                  className="relative z-10 flex-shrink-0 group"
+                  title={phase.label}
+                >
+                  {/* Bead icon */}
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+                      isCurrent
+                        ? 'ring-2 ring-offset-1 scale-125 shadow-md'
+                        : 'hover:scale-110 shadow-sm'
+                    }`}
+                    style={{
+                      backgroundColor: phase.color,
+                      color: 'white',
+                      opacity: isCurrent ? 1 : isCompleted ? 0.9 : 0.6,
+                    }}
+                  >
+                    {phase.icon}
+                  </div>
+
+                  {/* Completion checkmark */}
+                  {isCompleted && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-1.5 h-1.5 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  )}
+
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {phase.label}
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </div>
-
-        {/* Phase Markers */}
-        <div className="flex items-end justify-between gap-4">
-          {phaseConfigs.map((config, index) => {
-            const { isCompleted, isCurrent } = getPhaseState(index);
-
-            return (
-              <div key={config.phase} className="flex-1 flex justify-center relative">
-                <PhaseMarker
-                  config={config}
-                  isCompleted={isCompleted}
-                  isCurrent={isCurrent}
-                  onClick={() => handlePhaseClick(config.phase)}
-                />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Current Phase Label */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Current Phase: <span className="font-semibold text-gray-900">{currentPhase?.label}</span>
-          </p>
         </div>
       </div>
     </div>
