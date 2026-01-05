@@ -17,7 +17,13 @@ export function WelcomePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleBegin = async () => {
+  const handleBegin = () => {
+    // Open wizard with the prompt
+    setShowWizard(true);
+  };
+
+  const handleWizardComplete = async (data: any) => {
+    setShowWizard(false);
     setError(null);
     setIsGenerating(true);
 
@@ -29,16 +35,21 @@ export function WelcomePage() {
       const autoFillService = new WorkshopAutoFillService(apiKey);
       
       // Generate content from prompt
-      const result = await autoFillService.generateFromPrompt(projectPrompt);
+      const result = await autoFillService.generateFromPrompt(data.projectDescription);
       
       // Apply results to session
       const updates = autoFillService.applyToSession(result, state);
       
-      // Update all sections
+      // Update all sections with wizard data
       if (updates.projectContext) {
         updateProjectContext({
           ...updates.projectContext,
-          duration,
+          projectName: data.projectName,
+          projectDescription: data.projectDescription,
+          stakeholders: data.stakeholders,
+          constraints: data.constraints,
+          timeline: data.timeline,
+          duration: data.duration,
           completed: true,
         });
       }
@@ -87,12 +98,7 @@ export function WelcomePage() {
             </div>
             <span className="font-semibold text-gray-900">Creative Discovery Workshop</span>
           </div>
-          <button
-            onClick={() => setShowWizard(true)}
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100"
-          >
-            Advanced
-          </button>
+
         </div>
       </header>
 
@@ -182,7 +188,7 @@ export function WelcomePage() {
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5" />
-                    Generate Workshop with AI
+                    Continue to Details
                   </>
                 )}
               </button>
@@ -239,22 +245,7 @@ export function WelcomePage() {
       {showWizard && (
         <AdvancedWizard
           initialPrompt={projectPrompt}
-          onComplete={(data) => {
-            // Update all fields from wizard
-            setProjectPrompt(data.projectDescription);
-            setDuration(data.duration);
-            updateProjectContext({
-              projectName: data.projectName,
-              projectDescription: data.projectDescription,
-              stakeholders: data.stakeholders,
-              constraints: data.constraints,
-              timeline: data.timeline,
-              duration: data.duration,
-            });
-            setShowWizard(false);
-            // Optionally auto-start generation
-            // handleBegin();
-          }}
+          onComplete={handleWizardComplete}
           onCancel={() => setShowWizard(false)}
         />
       )}
