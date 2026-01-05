@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
+  closestCorners,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -56,25 +56,32 @@ export default function PrioritizationPage() {
     if (!over) return;
 
     const cardId = active.id as string;
-    const targetPriority = over.id as RequirementPriority;
+    
+    // Determine target priority from over.id or over.data
+    let targetPriority: RequirementPriority | null = null;
+    
+    if (over.id === 'will' || over.id === 'could' || over.id === 'wont') {
+      targetPriority = over.id as RequirementPriority;
+    } else if (over.data?.current?.sortable?.containerId) {
+      // If dropping on a card, use its container
+      const containerId = over.data.current.sortable.containerId;
+      if (containerId === 'will' || containerId === 'could' || containerId === 'wont') {
+        targetPriority = containerId as RequirementPriority;
+      }
+    }
 
-    // Check if dropping on a priority zone
-    if (['will', 'could', 'wont'].includes(targetPriority)) {
+    if (targetPriority) {
       moveRequirementCard(cardId, targetPriority);
     }
   };
 
-  const handleAddRequirement = (description: string, priority: RequirementPriority) => {
+  const handleAddRequirement = (description: string) => {
     if (!description.trim()) return;
 
-    const cardId = Math.random().toString(36).substr(2, 9);
     addRequirementCard({
       description: description.trim(),
       source: 'Manual Entry',
     });
-    
-    // Move to the correct priority
-    moveRequirementCard(cardId, priority);
   };
 
   const handleDelete = (cardId: string) => {
@@ -121,7 +128,7 @@ export default function PrioritizationPage() {
         {/* MoSCoW Columns */}
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCenter}
+          collisionDetection={closestCorners}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
@@ -195,7 +202,7 @@ interface PriorityColumnProps {
   cards: RequirementCard[];
   onDelete: (cardId: string) => void;
   color: 'green' | 'yellow' | 'red';
-  onAddRequirement: (description: string, priority: RequirementPriority) => void;
+  onAddRequirement: (description: string) => void;
 }
 
 function PriorityColumn({
@@ -251,7 +258,7 @@ function PriorityColumn({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && inputValue.trim()) {
-                onAddRequirement(inputValue.trim(), priority);
+                onAddRequirement(inputValue.trim());
                 setInputValue('');
               }
             }}
