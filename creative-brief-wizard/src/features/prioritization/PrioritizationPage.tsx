@@ -15,7 +15,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useSession } from '../../hooks/useSession';
 import RequirementCardComponent from '../../components/RequirementCard';
 import type { RequirementCard, RequirementPriority } from '../../types';
@@ -26,9 +26,6 @@ export default function PrioritizationPage() {
   const { prioritization } = state;
 
   const [activeCard, setActiveCard] = useState<RequirementCard | null>(null);
-  const [newRequirement, setNewRequirement] = useState('');
-  const [newSource, setNewSource] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -67,17 +64,17 @@ export default function PrioritizationPage() {
     }
   };
 
-  const handleAddRequirement = () => {
-    if (!newRequirement.trim()) return;
+  const handleAddRequirement = (description: string, priority: RequirementPriority) => {
+    if (!description.trim()) return;
 
+    const cardId = Math.random().toString(36).substr(2, 9);
     addRequirementCard({
-      description: newRequirement.trim(),
-      source: newSource.trim() || 'Manual Entry',
+      description: description.trim(),
+      source: 'Manual Entry',
     });
-
-    setNewRequirement('');
-    setNewSource('');
-    setShowAddForm(false);
+    
+    // Move to the correct priority
+    moveRequirementCard(cardId, priority);
   };
 
   const handleDelete = (cardId: string) => {
@@ -116,68 +113,9 @@ export default function PrioritizationPage() {
           </div>
         </div>
 
-        {/* Add Requirement Button */}
-        <div className="mb-6">
-          {!showAddForm ? (
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-            >
-              <Plus className="h-5 w-5" />
-              Add Requirement
-            </button>
-          ) : (
-            <div className="rounded-lg border border-gray-300 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-semibold text-gray-900">New Requirement</h3>
-              <div className="space-y-3">
-                <div>
-                  <label htmlFor="description" className="block text-xs font-medium text-gray-700">
-                    Description *
-                  </label>
-                  <textarea
-                    id="description"
-                    value={newRequirement}
-                    onChange={(e) => setNewRequirement(e.target.value)}
-                    placeholder="Enter requirement description..."
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="source" className="block text-xs font-medium text-gray-700">
-                    Source (optional)
-                  </label>
-                  <input
-                    id="source"
-                    type="text"
-                    value={newSource}
-                    onChange={(e) => setNewSource(e.target.value)}
-                    placeholder="e.g., Customer Discovery, Spot Exercise..."
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleAddRequirement}
-                    disabled={!newRequirement.trim()}
-                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Add to "Will Have"
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowAddForm(false);
-                      setNewRequirement('');
-                      setNewSource('');
-                    }}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+        {/* Info Text */}
+        <div className="mb-6 text-sm text-gray-600">
+          <p>Click in any column and type to add requirements. Press Enter to save.</p>
         </div>
 
         {/* MoSCoW Columns */}
@@ -196,6 +134,7 @@ export default function PrioritizationPage() {
               cards={prioritization.willHave}
               onDelete={handleDelete}
               color="green"
+              onAddRequirement={handleAddRequirement}
             />
 
             {/* Could Have Column */}
@@ -206,6 +145,7 @@ export default function PrioritizationPage() {
               cards={prioritization.couldHave}
               onDelete={handleDelete}
               color="yellow"
+              onAddRequirement={handleAddRequirement}
             />
 
             {/* Won't Have Column */}
@@ -216,6 +156,7 @@ export default function PrioritizationPage() {
               cards={prioritization.wontHave}
               onDelete={handleDelete}
               color="red"
+              onAddRequirement={handleAddRequirement}
             />
           </div>
 
@@ -254,6 +195,7 @@ interface PriorityColumnProps {
   cards: RequirementCard[];
   onDelete: (cardId: string) => void;
   color: 'green' | 'yellow' | 'red';
+  onAddRequirement: (description: string, priority: RequirementPriority) => void;
 }
 
 function PriorityColumn({
@@ -263,7 +205,9 @@ function PriorityColumn({
   cards,
   onDelete,
   color,
+  onAddRequirement,
 }: PriorityColumnProps) {
+  const [inputValue, setInputValue] = useState('');
   const colorClasses = {
     green: 'border-green-500 bg-green-50',
     yellow: 'border-yellow-500 bg-yellow-50',
@@ -275,6 +219,8 @@ function PriorityColumn({
     yellow: 'bg-yellow-500',
     red: 'bg-red-500',
   };
+
+
 
   return (
     <SortableContext
@@ -294,15 +240,24 @@ function PriorityColumn({
 
         {/* Cards Container */}
         <div className="flex-1 space-y-2 p-4">
-          {cards.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-center">
-              <p className="text-sm text-gray-500">Drag requirements here</p>
-            </div>
-          ) : (
-            cards.map((card) => (
-              <RequirementCardComponent key={card.id} card={card} onDelete={onDelete} />
-            ))
-          )}
+          {cards.map((card) => (
+            <RequirementCardComponent key={card.id} card={card} onDelete={onDelete} />
+          ))}
+          
+          {/* Fast-Entry Input */}
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && inputValue.trim()) {
+                onAddRequirement(inputValue.trim(), priority);
+                setInputValue('');
+              }
+            }}
+            placeholder={cards.length === 0 ? 'Click here or type to add...' : 'Type to add...'}
+            className="w-full rounded-md border border-dashed border-gray-400 bg-white/50 px-3 py-2 text-sm placeholder-gray-500 focus:border-solid focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
+          />
         </div>
 
         {/* Card Count */}
