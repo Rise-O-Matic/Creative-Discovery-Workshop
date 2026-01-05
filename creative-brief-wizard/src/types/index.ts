@@ -277,6 +277,9 @@ export interface SessionState {
 
   // Discovery phases
   customerDiscovery: CustomerDiscovery;
+  
+  // Granular answers (mapped by question ID)
+  granularAnswers: Record<string, string>;
 
   // Sticky note exercise
   stickyNoteExercise: StickyNoteExercise;

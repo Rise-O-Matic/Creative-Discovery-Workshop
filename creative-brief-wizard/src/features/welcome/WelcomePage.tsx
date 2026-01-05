@@ -52,8 +52,12 @@ export function WelcomePage() {
         });
       }
       
-      if (updates.customerDiscovery) {
-        updateCustomerDiscovery(updates.customerDiscovery);
+      if (updates.granularAnswers) {
+        // We need to update the state with the new granular questions that have answers
+        updateCustomerDiscovery({
+          granularQuestions: updates.granularAnswers,
+          completed: true
+        });
       }
       
       // Navigate to discovery phase

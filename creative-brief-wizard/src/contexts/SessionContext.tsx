@@ -33,6 +33,7 @@ export interface SessionContextValue {
 
   // Customer discovery
   updateCustomerDiscovery: (discovery: Partial<CustomerDiscovery>) => void;
+  updateGranularAnswers: (answers: Record<string, string>) => void;
 
   // Sticky notes CRUD
   addStickyNote: (note: Omit<StickyNote, 'id' | 'createdAt'>) => void;
@@ -215,6 +216,27 @@ function createDefaultState(): SessionState {
       },
       completed: false,
     },
+    granularAnswers: {
+      'aud-1': '',
+      'aud-2': '',
+      'aud-3': '',
+      'aud-4': '',
+      'aud-5': '',
+      'off-1': '',
+      'off-2': '',
+      'off-3': '',
+      'off-4': '',
+      'off-5': '',
+      'tim-1': '',
+      'tim-2': '',
+      'tim-3': '',
+      'tim-4': '',
+      'suc-1': '',
+      'suc-2': '',
+      'suc-3': '',
+      'suc-4': '',
+      'suc-5': '',
+    },
     stickyNoteExercise: {
       focusPrompt: '',
       notes: [],
@@ -373,6 +395,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       updateState((prev) => ({
         ...prev,
         customerDiscovery: { ...prev.customerDiscovery, ...discovery },
+      }));
+    },
+    [updateState]
+  );
+
+  // Granular answers
+  const updateGranularAnswers = useCallback(
+    (answers: Record<string, string>) => {
+      updateState((prev) => ({
+        ...prev,
+        granularAnswers: { ...prev.granularAnswers, ...answers },
       }));
     },
     [updateState]
@@ -733,6 +766,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       navigateToPhase,
       updateProjectContext,
       updateCustomerDiscovery,
+      updateGranularAnswers,
       addStickyNote,
       updateStickyNote,
       deleteStickyNote,
@@ -766,6 +800,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       navigateToPhase,
       updateProjectContext,
       updateCustomerDiscovery,
+      updateGranularAnswers,
       addStickyNote,
       updateStickyNote,
       deleteStickyNote,
