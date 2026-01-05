@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSession } from '../../hooks/useSession';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { WorkshopAutoFillService } from '../../services/ai/WorkshopAutoFillService';
+import { AdvancedWizard } from './AdvancedWizard';
 
 /**
  * Welcome screen - minimal prompt-based interface with AI auto-fill
@@ -12,6 +13,7 @@ export function WelcomePage() {
   const [projectPrompt, setProjectPrompt] = useState('');
   const [duration, setDuration] = useState(60);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,10 +88,10 @@ export function WelcomePage() {
             <span className="font-semibold text-gray-900">Creative Discovery Workshop</span>
           </div>
           <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            onClick={() => setShowWizard(true)}
+            className="text-sm text-gray-600 hover:text-gray-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100"
           >
-            {showAdvanced ? 'Simple' : 'Advanced'}
+            Advanced
           </button>
         </div>
       </header>
@@ -142,7 +144,7 @@ export function WelcomePage() {
             )}
 
             {/* Duration Selector (Simple) */}
-            {!showAdvanced && !isGenerating && (
+            {!isGenerating && (
               <div className="mt-4 flex items-center justify-center gap-2">
                 <label className="text-sm text-gray-600">Workshop duration:</label>
                 <select
@@ -159,26 +161,7 @@ export function WelcomePage() {
               </div>
             )}
 
-            {/* Advanced Options */}
-            {showAdvanced && !isGenerating && (
-              <div className="mt-6 p-6 bg-white rounded-xl border border-gray-200 space-y-4 slide-in">
-                <h3 className="font-semibold text-gray-900 text-sm">Advanced Options</h3>
-                
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Workshop Duration (minutes)
-                  </label>
-                  <input
-                    type="number"
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value) || 60)}
-                    min="15"
-                    max="480"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-            )}
+
 
             {/* Action Button */}
             <div className="mt-6 flex justify-center">
@@ -251,6 +234,30 @@ export function WelcomePage() {
             : 'Powered by OpenAI • Generate a complete workshop in seconds'}
         </p>
       </footer>
+
+      {/* Advanced Wizard Modal */}
+      {showWizard && (
+        <AdvancedWizard
+          initialPrompt={projectPrompt}
+          onComplete={(data) => {
+            // Update all fields from wizard
+            setProjectPrompt(data.projectDescription);
+            setDuration(data.duration);
+            updateProjectContext({
+              projectName: data.projectName,
+              projectDescription: data.projectDescription,
+              stakeholders: data.stakeholders,
+              constraints: data.constraints,
+              timeline: data.timeline,
+              duration: data.duration,
+            });
+            setShowWizard(false);
+            // Optionally auto-start generation
+            // handleBegin();
+          }}
+          onCancel={() => setShowWizard(false)}
+        />
+      )}
     </div>
   );
 }

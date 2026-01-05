@@ -291,6 +291,10 @@ body {
 .stagger-item:nth-child(4) { animation-delay: 0.24s; }
 .stagger-item:nth-child(5) { animation-delay: 0.32s; }
 
+.animate-fadeIn {
+  animation: fadeIn var(--transition-base) ease;
+}
+
 /* ============================================
    Visual Effects - Minimized
    ============================================ */
