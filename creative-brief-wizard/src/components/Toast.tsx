@@ -136,7 +136,7 @@ export const ToastContainer: React.FC = () => {
         `}
       </style>
       <div
-        className="fixed top-20 md:top-4 right-4 flex flex-col gap-3 pointer-events-none"
+        className="fixed bottom-4 left-4 flex flex-col gap-3 pointer-events-none"
         style={{ zIndex: 'var(--z-popover)' }}
         aria-live="polite"
         aria-relevant="additions"
