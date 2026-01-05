@@ -15,6 +15,7 @@ import { BriefCompletePage } from './features/brief/BriefCompletePage';
 import { GlobalTimeline } from './components/GlobalTimeline';
 import { ToastContainer } from './components/Toast';
 import { DevTools } from './components/DevTools';
+import { Version } from './components/Version';
 
 function PhaseRouter() {
   const { state } = useSession();
@@ -78,6 +79,9 @@ function AppContent() {
 
       {/* Dev Tools (only in development mode) */}
       {import.meta.env.DEV && <DevTools />}
+
+      {/* Version Number */}
+      <Version />
     </div>
   );
 }
