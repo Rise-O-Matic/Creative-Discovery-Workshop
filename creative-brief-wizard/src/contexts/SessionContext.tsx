@@ -5,7 +5,7 @@ import type {
   SessionPhase,
   StickyNote,
   Cluster,
-  LLMProvider,
+  LLMConfig,
   RequirementCard,
   RequirementPriority,
   CreativeBrief,
@@ -36,6 +36,9 @@ export interface SessionContextValue {
   updateCustomerDiscovery: (discovery: Partial<CustomerDiscovery>) => void;
   updateGranularAnswers: (answers: Record<string, string>) => void;
 
+  // Creative brief
+  setCreativeBrief: (brief: CreativeBrief) => void;
+
   // Sticky notes CRUD
   addStickyNote: (note: Omit<StickyNote, 'id' | 'createdAt'>) => void;
   updateStickyNote: (id: string, updates: Partial<StickyNote>) => void;
@@ -58,21 +61,20 @@ export interface SessionContextValue {
   updateSpotExercises: (exercises: Partial<SpotExercises>) => void;
 
   // Prioritization
-  addRequirementCard: (card: Omit<RequirementCard, 'id'>) => void;
-  moveRequirementCard: (cardId: string, priority: RequirementPriority) => void;
+  addRequirementCard: (card: Omit<RequirementCard, 'id' | 'createdAt'>) => void;
+  moveRequirementCard: (cardId: string, newPriority: RequirementPriority) => void;
   deleteRequirementCard: (cardId: string) => void;
 
-  // Timer management
-  startTimer: (durationSeconds: number) => void;
+  // Timer
+  startTimer: (durationInSeconds: number) => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => void;
 
-  // LLM configuration
-  setLLMConfig: (provider: LLMProvider, apiKey: string, model: string) => void;
+  // LLM config
+  setLLMConfig: (config: Partial<LLMConfig>) => void;
 
-  // Creative brief
-  setCreativeBrief: (brief: CreativeBrief) => void;
+  // Brief section updates
   updateBriefSection: (sectionKey: keyof CreativeBrief, content: string) => void;
 
   // Session management
@@ -392,6 +394,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     [updateState]
   );
 
+  // Creative brief
+  const setCreativeBrief = useCallback(
+    (brief: CreativeBrief) => {
+      updateState((prev) => ({
+        ...prev,
+        creativeBrief: { ...brief, generatedAt: Date.now() },
+      }));
+    },
+    [updateState]
+  );
+
   // Sticky notes CRUD
   const addStickyNote = useCallback(
     (note: Omit<StickyNote, 'id' | 'createdAt'>) => {
@@ -693,23 +706,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   // LLM configuration
   const setLLMConfig = useCallback(
-    (provider: LLMProvider, apiKey: string, model: string) => {
+    (config: Partial<LLMConfig>) => {
       updateState((prev) => ({
         ...prev,
-        llmConfig: { provider, apiKey, model },
+        llmConfig: { ...prev.llmConfig, ...config },
       }));
     },
     [updateState]
   );
 
-  // Creative brief
-  const setCreativeBrief = useCallback(
-    (brief: CreativeBrief) => {
-      updateState((prev) => ({ ...prev, creativeBrief: brief }));
-    },
-    [updateState]
-  );
-
+  // Brief section updates
   const updateBriefSection = useCallback(
     (sectionKey: keyof CreativeBrief, content: string) => {
       updateState((prev) => {
@@ -718,10 +724,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           ...prev,
           creativeBrief: {
             ...prev.creativeBrief,
-            [sectionKey]:
-              typeof prev.creativeBrief[sectionKey] === 'object'
-                ? { ...prev.creativeBrief[sectionKey], content }
-                : prev.creativeBrief[sectionKey],
+            [sectionKey]: content,
           },
         };
       });

@@ -22,8 +22,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend API is running' });
 });
 
-// AI autofill endpoint
-app.post('/api/autofill', async (req, res) => {
+// AI creative brief generation endpoint
+app.post('/api/generate-brief', async (req, res) => {
   try {
     const { prompt } = req.body;
 
@@ -31,68 +31,60 @@ app.post('/api/autofill', async (req, res) => {
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
-    const systemPrompt = `You are an expert creative strategist helping to fill out a creative discovery workshop. 
-Based on a project description, you will generate thoughtful, specific answers to 19 questions across 4 categories:
+    const systemPrompt = `You are an expert creative strategist. Based on a project description, generate a complete, professional creative brief following standard industry conventions.
 
-**AUDIENCE (5 questions)**
-- Who is your primary audience?
-- Are there secondary audiences?
-- What age range and profession?
-- What do they value most?
-- Where do they spend their time?
+The brief should include these sections:
 
-**OFFERING (5 questions)**
-- What are you offering?
-- What makes it different?
-- What is the core benefit?
-- What problem does it solve?
-- How would you describe it in one sentence?
-
-**TIMING (4 questions)**
-- Why now? What is the urgency?
-- Is there a specific deadline?
-- What happens if you wait?
-- Are there seasonal or cultural factors?
-
-**SUCCESS (5 questions)**
-- How will you measure success?
-- What does short-term success look like?
-- What about long-term success?
-- What would failure look like?
-- Who gets to declare this a success?
+1. **Project Overview** - A compelling summary of the project (2-3 paragraphs)
+2. **Target Audience** - Detailed description of who this is for (demographics, psychographics, behaviors)
+3. **Key Message & Value Proposition** - The core message and unique value
+4. **Objectives & Goals** - What this project aims to achieve (3-5 specific goals)
+5. **Deliverables** - What will be created/delivered
+6. **Tone & Style** - How the creative should feel and communicate
+7. **Timeline & Milestones** - Key dates and phases
+8. **Success Metrics** - How success will be measured (specific KPIs)
 
 Return your response as a JSON object with this structure:
 {
-  "projectName": "A concise project name (3-6 words)",
-  "projectDescription": "An enhanced version of the input description (2-3 sentences)",
-  "granularAnswers": {
-    "aud-1": "answer to audience question 1",
-    "aud-2": "answer to audience question 2",
-    "aud-3": "answer to audience question 3",
-    "aud-4": "answer to audience question 4",
-    "aud-5": "answer to audience question 5",
-    "off-1": "answer to offering question 1",
-    "off-2": "answer to offering question 2",
-    "off-3": "answer to offering question 3",
-    "off-4": "answer to offering question 4",
-    "off-5": "answer to offering question 5",
-    "time-1": "answer to timing question 1",
-    "time-2": "answer to timing question 2",
-    "time-3": "answer to timing question 3",
-    "time-4": "answer to timing question 4",
-    "succ-1": "answer to success question 1",
-    "succ-2": "answer to success question 2",
-    "succ-3": "answer to success question 3",
-    "succ-4": "answer to success question 4",
-    "succ-5": "answer to success question 5"
+  "projectName": "A concise, compelling project name",
+  "brief": {
+    "overview": "2-3 paragraph overview with context, challenge, and opportunity",
+    "audience": "Detailed audience description with demographics, psychographics, and behaviors",
+    "keyMessage": "The core message and value proposition",
+    "objectives": ["Objective 1", "Objective 2", "Objective 3", ...],
+    "deliverables": "Description of what will be created",
+    "toneAndStyle": "Description of tone, voice, and creative direction",
+    "timeline": "Timeline description with key milestones",
+    "successMetrics": ["Metric 1", "Metric 2", "Metric 3", ...]
+  },
+  "refinementQuestions": {
+    "aud-1": "answer",
+    "aud-2": "answer",
+    "aud-3": "answer",
+    "aud-4": "answer",
+    "aud-5": "answer",
+    "off-1": "answer",
+    "off-2": "answer",
+    "off-3": "answer",
+    "off-4": "answer",
+    "off-5": "answer",
+    "time-1": "answer",
+    "time-2": "answer",
+    "time-3": "answer",
+    "time-4": "answer",
+    "succ-1": "answer",
+    "succ-2": "answer",
+    "succ-3": "answer",
+    "succ-4": "answer",
+    "succ-5": "answer"
   }
 }
 
-Make answers specific, actionable, and tailored to the project. Each answer should be 1-2 sentences.`;
+Make the brief professional, specific, and actionable. Use the project description to inform all sections.`;
 
     const userPrompt = `Project description: "${prompt}"
 
-Please generate all workshop answers based on this project description.`;
+Generate a complete creative brief for this project.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -107,15 +99,15 @@ Please generate all workshop answers based on this project description.`;
     const result = JSON.parse(completion.choices[0].message.content);
 
     // Validate the response structure
-    if (!result.projectName || !result.projectDescription || !result.granularAnswers) {
+    if (!result.projectName || !result.brief) {
       throw new Error('Invalid response format from AI');
     }
 
     res.json(result);
   } catch (error) {
-    console.error('Error in autofill endpoint:', error);
+    console.error('Error in generate-brief endpoint:', error);
     res.status(500).json({ 
-      error: 'Failed to generate workshop content',
+      error: 'Failed to generate creative brief',
       message: error.message 
     });
   }

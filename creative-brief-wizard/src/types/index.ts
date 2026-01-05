@@ -162,17 +162,15 @@ export interface BriefSection {
 }
 
 export interface CreativeBrief {
-  projectOverview: BriefSection;
-  objectives: BriefSection;
-  targetAudience: BriefSection;
-  keyMessageAndTone: BriefSection;
-  requirements: BriefSection;
-  deliverables: BriefSection;
-  constraintsAndRisks: BriefSection;
-  timeline: BriefSection;
-  stakeholders: BriefSection;
-  scope: BriefSection;
-  generatedAt: number;
+  overview: string;
+  audience: string;
+  keyMessage: string;
+  objectives: string;
+  deliverables: string;
+  toneAndStyle: string;
+  timeline: string;
+  successMetrics: string;
+  generatedAt?: number;
 }
 
 // ============================================================================

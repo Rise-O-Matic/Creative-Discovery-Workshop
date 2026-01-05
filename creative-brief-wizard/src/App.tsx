@@ -11,12 +11,12 @@ import { GranularDiscoveryPage } from './features/discovery/GranularDiscoveryPag
 // import { SpotExercisesPage } from './features/spot-exercises/SpotExercisesPage';
 import PrioritizationPage from './features/prioritization/PrioritizationPage';
 import { SynthesisReviewPage } from './features/review/SynthesisReviewPage';
-import { BriefCompletePage } from './features/brief/BriefCompletePage';
+import { BriefEditorPage } from './features/brief-editor/BriefEditorPage';
 import { GlobalTimeline } from './components/GlobalTimeline';
 import { ToastContainer } from './components/Toast';
 import { DevTools } from './components/DevTools';
 import { Version } from './components/Version';
-import { BriefCanvas } from './components/BriefCanvas';
+
 
 function PhaseRouter() {
   const { state } = useSession();
@@ -38,7 +38,7 @@ function PhaseRouter() {
     case 'synthesis-review':
       return <SynthesisReviewPage />;
     case 'brief-complete':
-      return <BriefCompletePage />;
+      return <BriefEditorPage />;
     default:
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -64,23 +64,15 @@ function AppContent() {
   const { state } = useSession();
   // Timeline is always shown, state is used by PhaseRouter
   const showTimeline = !!state;
-  // Show brief canvas after welcome page
-  const showBriefCanvas = state && state.currentPhase !== 'project-context';
 
   return (
     <div className="flex flex-col h-screen">
       {/* Global Timeline Bar at Top */}
       {showTimeline && <GlobalTimeline />}
 
-      {/* Main Content Area with Canvas */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Main Content */}
-        <div className="flex-1 overflow-auto bg-gray-50">
-          <PhaseRouter />
-        </div>
-
-        {/* Brief Canvas (shown after welcome page) */}
-        {showBriefCanvas && <BriefCanvas />}
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto bg-gray-50">
+        <PhaseRouter />
       </div>
 
       {/* Toast Notifications */}

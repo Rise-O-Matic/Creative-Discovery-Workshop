@@ -77,7 +77,7 @@ export function AIPromptPage() {
       return;
     }
 
-    setLLMConfig(provider, apiKey, model);
+    setLLMConfig({ provider, apiKey, model });
     addToast('API configuration saved successfully', 'success', 3000);
     setShowApiConfig(false);
   };
