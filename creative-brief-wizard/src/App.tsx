@@ -16,6 +16,7 @@ import { GlobalTimeline } from './components/GlobalTimeline';
 import { ToastContainer } from './components/Toast';
 import { DevTools } from './components/DevTools';
 import { Version } from './components/Version';
+import { BriefCanvas } from './components/BriefCanvas';
 
 function PhaseRouter() {
   const { state } = useSession();
@@ -63,6 +64,8 @@ function AppContent() {
   const { state } = useSession();
   // Timeline is always shown, state is used by PhaseRouter
   const showTimeline = !!state;
+  // Show brief canvas after welcome page
+  const showBriefCanvas = state && state.currentPhase !== 'project-context';
 
   return (
     <div className="flex flex-col h-screen">
@@ -82,6 +85,9 @@ function AppContent() {
 
       {/* Version Number */}
       <Version />
+
+      {/* Brief Canvas (shown after welcome page) */}
+      {showBriefCanvas && <BriefCanvas />}
     </div>
   );
 }
