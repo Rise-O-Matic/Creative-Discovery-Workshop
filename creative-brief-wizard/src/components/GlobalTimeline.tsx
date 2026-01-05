@@ -100,8 +100,6 @@ export const GlobalTimeline: React.FC = () => {
   // Handle phase navigation
   const handlePhaseClick = (targetPhase: SessionPhase) => {
     setPhase(targetPhase);
-    const phaseName = PHASES.find((p) => p.phase === targetPhase)?.label;
-    addToast(`Navigated to ${phaseName}`, 'info', 2000);
   };
 
   // Handle pause/resume

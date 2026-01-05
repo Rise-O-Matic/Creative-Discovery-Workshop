@@ -26,11 +26,9 @@ export function WelcomePage() {
     setIsGenerating(true);
 
     try {
-      // Get API key from environment
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY || 'mock';
-      
-      // Create auto-fill service
-      const autoFillService = new WorkshopAutoFillService(apiKey);
+      // Create auto-fill service (uses backend proxy)
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      const autoFillService = new WorkshopAutoFillService(backendUrl);
       
       // Generate content from prompt
       const result = await autoFillService.generateFromPrompt(data.projectDescription);

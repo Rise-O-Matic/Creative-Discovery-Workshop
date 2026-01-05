@@ -1,5 +1,5 @@
 // Workshop Auto-Fill Service
-// Uses OpenAI API to generate intelligent suggestions for all workshop questions
+// Uses backend API proxy to generate intelligent suggestions for all workshop questions
 
 import type { SessionState } from '../../types';
 
@@ -13,38 +13,56 @@ export interface AutoFillResult {
 }
 
 /**
- * Service to auto-fill workshop content using AI
+ * Service to auto-fill workshop content using AI via backend proxy
  */
 export class WorkshopAutoFillService {
-  private apiKey: string;
+  private backendUrl: string;
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
+  constructor(backendUrl?: string) {
+    // Use environment variable or default to localhost for development
+    this.backendUrl = backendUrl || import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
   }
 
   /**
    * Generate all workshop content from a simple prompt
    */
   async generateFromPrompt(prompt: string): Promise<AutoFillResult> {
-    // For now, use mock data since browser CORS prevents direct API calls
-    // TODO: Implement backend proxy for production
-    if (true) { // Always use mock for now
-      return this.generateMockData(prompt);
-    }
-    
-    // The rest of the code is kept for future implementation when backend is ready
-    /*
-    const systemPrompt = `You are an expert creative strategist...`;
-    const userPrompt = `Project description: "${prompt}"...`;
-
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', { ... });
-      // ... parsing logic ...
+      const response = await fetch(`${this.backendUrl}/api/autofill`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `API request failed with status ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+
+      // Validate the response structure
+      if (!result.projectName || !result.projectDescription || !result.granularAnswers) {
+        throw new Error('Invalid response format from AI');
+      }
+
+      return result as AutoFillResult;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('AI generation error:', errorMessage);
+      
+      // Fall back to mock data if backend is unavailable
+      if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
+        console.warn('Backend unavailable, falling back to mock data');
+        return this.generateMockData(prompt);
+      }
+      
       throw new Error(`Failed to generate workshop content: ${errorMessage}`);
     }
-    */
   }
 
   /**
@@ -71,17 +89,17 @@ export class WorkshopAutoFillService {
     granularAnswers['off-5'] = 'Launch at tech conference, reach early adopters, establish market leadership position';
     
     // Timing answers
-    granularAnswers['tim-1'] = 'Immediate - tech conference launch provides concentrated audience of early adopters';
-    granularAnswers['tim-2'] = 'Q1-Q2 2024 - peak interest in AI productivity tools, before competitors launch';
-    granularAnswers['tim-3'] = 'High urgency - competitors launching similar products, beta waitlist growing 300%';
-    granularAnswers['tim-4'] = 'Media is actively covering AI innovations - window of attention is open now';
+    granularAnswers['time-1'] = 'Immediate - tech conference launch provides concentrated audience of early adopters';
+    granularAnswers['time-2'] = 'Q1-Q2 2024 - peak interest in AI productivity tools, before competitors launch';
+    granularAnswers['time-3'] = 'High urgency - competitors launching similar products, beta waitlist growing 300%';
+    granularAnswers['time-4'] = 'Media is actively covering AI innovations - window of attention is open now';
     
     // Success answers
-    granularAnswers['suc-1'] = '50K+ video views across all platforms within first week of launch';
-    granularAnswers['suc-2'] = '15%+ engagement rate on social media posts, 5K+ conference attendees sign up';
-    granularAnswers['suc-3'] = 'Net Promoter Score of 8+, coverage in 3+ major tech publications';
-    granularAnswers['suc-4'] = '20%+ share rate on key video content, 30%+ brand awareness increase';
-    granularAnswers['suc-5'] = 'Video content drives 25%+ of total app sign-ups in first quarter';
+    granularAnswers['succ-1'] = '50K+ video views across all platforms within first week of launch';
+    granularAnswers['succ-2'] = '15%+ engagement rate on social media posts, 5K+ conference attendees sign up';
+    granularAnswers['succ-3'] = 'Net Promoter Score of 8+, coverage in 3+ major tech publications';
+    granularAnswers['succ-4'] = '20%+ share rate on key video content, 30%+ brand awareness increase';
+    granularAnswers['succ-5'] = 'Video content drives 25%+ of total app sign-ups in first quarter';
     
     return {
       projectName,
@@ -129,15 +147,11 @@ export class WorkshopAutoFillService {
   }
 
   /**
-   * Test connection to AI service
+   * Test connection to backend service
    */
   async testConnection(): Promise<boolean> {
     try {
-      const response = await fetch('https://api.openai.com/v1/models', {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-      });
+      const response = await fetch(`${this.backendUrl}/health`);
       return response.ok;
     } catch (error) {
       return false;
