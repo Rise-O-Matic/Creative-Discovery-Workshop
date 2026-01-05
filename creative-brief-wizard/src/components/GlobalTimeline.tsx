@@ -1,37 +1,73 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSession } from '../hooks/useSession';
 import { useToast } from '../contexts/ToastContext';
 import { useMeetingTimer } from '../contexts/MeetingTimerContext';
 import { useFormattedTime } from '../hooks/useMeetingTimer';
 import type { SessionPhase } from '../types';
+import {
+  Sparkles,
+  HelpCircle,
+  Users,
+  TrendingUp,
+  CheckCircle2,
+  Play,
+  Pause,
+  RotateCcw,
+} from 'lucide-react';
 
 // ============================================================================
-// Phase Configuration
+// Phase Configuration with Icons
 // ============================================================================
 
 interface PhaseConfig {
   phase: SessionPhase;
   label: string;
   shortLabel: string;
-  expectedDurationMs: number;
+  icon: React.ReactNode;
   color: string;
+  expectedDurationMs: number;
 }
 
 /**
  * Calculate phase durations based on total workshop duration
  */
 function calculatePhaseConfigs(workshopDurationMinutes: number): PhaseConfig[] {
-  // Base durations with proportional scaling
   const baseDurations: Omit<PhaseConfig, 'expectedDurationMs'>[] = [
-    { phase: 'project-context', label: 'Welcome', shortLabel: 'W', color: '#10b981' },
-    { phase: 'customer-discovery', label: 'Discovery', shortLabel: 'D', color: '#3b82f6' },
-    // Sticky notes phases temporarily shelved
-    // { phase: 'sticky-notes-diverge', label: 'Diverge', shortLabel: 'Dv', color: '#8b5cf6' },
-    // { phase: 'sticky-notes-converge', label: 'Converge', shortLabel: 'C', color: '#ec4899' },
-    // { phase: 'spot-exercises', label: 'Exercises', shortLabel: 'SE', color: '#f59e0b' },
-    { phase: 'prioritization', label: 'Prioritize', shortLabel: 'P', color: '#14b8a6' },
-    { phase: 'synthesis-review', label: 'Review', shortLabel: 'R', color: '#6366f1' },
-    { phase: 'brief-complete', label: 'Complete', shortLabel: 'B', color: '#22c55e' },
+    {
+      phase: 'project-context',
+      label: 'Welcome',
+      shortLabel: 'W',
+      icon: <Sparkles className="w-5 h-5" />,
+      color: '#10b981',
+    },
+    {
+      phase: 'customer-discovery',
+      label: 'Discovery',
+      shortLabel: 'D',
+      icon: <HelpCircle className="w-5 h-5" />,
+      color: '#3b82f6',
+    },
+    {
+      phase: 'prioritization',
+      label: 'Prioritize',
+      shortLabel: 'P',
+      icon: <TrendingUp className="w-5 h-5" />,
+      color: '#14b8a6',
+    },
+    {
+      phase: 'synthesis-review',
+      label: 'Review',
+      shortLabel: 'R',
+      icon: <Users className="w-5 h-5" />,
+      color: '#6366f1',
+    },
+    {
+      phase: 'brief-complete',
+      label: 'Complete',
+      shortLabel: 'B',
+      icon: <CheckCircle2 className="w-5 h-5" />,
+      color: '#22c55e',
+    },
   ];
 
   // Base proportions (totals to 60 minutes)
@@ -40,108 +76,81 @@ function calculatePhaseConfigs(workshopDurationMinutes: number): PhaseConfig[] {
 
   return baseDurations.map((phase, index) => ({
     ...phase,
-    expectedDurationMs: (baseProportions[index] / totalBaseMinutes) * workshopDurationMinutes * 60 * 1000,
+    expectedDurationMs:
+      (baseProportions[index] / totalBaseMinutes) * workshopDurationMinutes * 60 * 1000,
   }));
 }
 
 // ============================================================================
-// Phase Marker Component (Video Player Style)
+// Phase Marker Component (Top Timeline Style)
 // ============================================================================
 
 interface PhaseMarkerProps {
   config: PhaseConfig;
-  position: number; // percentage 0-100
   isCompleted: boolean;
   isCurrent: boolean;
-  isNext: boolean;
-  isLocked: boolean;
   onClick: () => void;
-  completedTimeMs?: number;
 }
 
 const PhaseMarker: React.FC<PhaseMarkerProps> = ({
   config,
-  position,
   isCompleted,
   isCurrent,
-  isNext,
-  isLocked,
   onClick,
-  completedTimeMs,
 }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  const getMarkerStyle = () => {
-    if (isCompleted) {
-      return 'bg-white border-white cursor-pointer hover:scale-125';
-    }
-    if (isCurrent) {
-      return 'bg-white border-white shadow-lg cursor-pointer scale-125';
-    }
-    if (isNext) {
-      return 'bg-white bg-opacity-50 border-white cursor-pointer hover:scale-110';
-    }
-    return 'bg-white bg-opacity-20 border-white border-opacity-30 cursor-not-allowed';
-  };
-
-  const formatTime = (ms: number): string => {
-    const minutes = Math.floor(ms / 60000);
-    return `${minutes}m`;
-  };
-
-  const expectedMinutes = Math.round(config.expectedDurationMs / 60000);
-
   return (
-    <div
-      className="absolute flex flex-col items-center justify-center"
-      style={{ 
-        left: `${position}%`, 
-        transform: 'translateX(-50%)',
-        bottom: '0',
-        height: '100%'
-      }}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center gap-2 transition-all duration-200 group`}
     >
-      {/* Tooltip */}
-      {showTooltip && (
-        <div className="absolute bottom-full mb-3 bg-gray-900 text-white px-3 py-2 rounded-lg shadow-xl z-50 whitespace-nowrap text-xs">
-          <div className="font-semibold">{config.label}</div>
-          {completedTimeMs !== undefined ? (
-            <div className="text-green-400 text-[10px]">
-              Completed in {formatTime(completedTimeMs)}
-            </div>
-          ) : (
-            <div className="text-gray-300 text-[10px]">{expectedMinutes}m expected</div>
-          )}
+      {/* Icon Circle */}
+      <div
+        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+          isCurrent
+            ? 'ring-4 ring-offset-2 scale-110 shadow-lg'
+            : isCompleted
+              ? 'bg-opacity-100 shadow-md'
+              : 'bg-opacity-60 shadow-sm'
+        }`}
+        style={{
+          backgroundColor: config.color,
+          color: 'white',
+        }}
+      >
+        {config.icon}
+      </div>
+
+      {/* Label */}
+      <div className="text-center">
+        <p
+          className={`text-xs font-semibold transition-colors ${
+            isCurrent ? 'text-gray-900' : isCompleted ? 'text-gray-700' : 'text-gray-500'
+          }`}
+        >
+          {config.label}
+        </p>
+      </div>
+
+      {/* Completion Indicator */}
+      {isCompleted && (
+        <div className="absolute -top-1 -right-1">
+          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
         </div>
       )}
-
-      {/* Circular Thumb - Vertically Centered on Bar */}
-      <div
-        className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${getMarkerStyle()}`}
-        onClick={isLocked ? undefined : onClick}
-        role="button"
-        aria-label={`${config.label} phase`}
-        tabIndex={isLocked ? -1 : 0}
-      >
-        {/* Checkmark for completed */}
-        {isCompleted && (
-          <svg className="w-2 h-2 text-gray-800" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )}
-      </div>
-    </div>
+    </button>
   );
 };
 
 // ============================================================================
-// GlobalTimeline Component (Video Player Style)
+// GlobalTimeline Component (Top Position)
 // ============================================================================
 
 export const GlobalTimeline: React.FC = () => {
@@ -154,7 +163,6 @@ export const GlobalTimeline: React.FC = () => {
     resumeMeeting,
     resetMeeting,
     getCurrentElapsedMs,
-    // getPhaseElapsedMs,
     getPacingStatus,
   } = useMeetingTimer();
   const { formatMs, getProgressPercentage } = useFormattedTime();
@@ -171,11 +179,13 @@ export const GlobalTimeline: React.FC = () => {
   const currentPhaseIndex = phaseConfigs.findIndex((p) => p.phase === state.currentPhase);
 
   // Calculate cumulative positions
-  const totalExpectedMs = phaseConfigs.reduce((sum, p) => sum + p.expectedDurationMs, 0);
-  const getPhasePosition = (index: number): number => {
-    const cumulativeMs = phaseConfigs.slice(0, index).reduce((sum, p) => sum + p.expectedDurationMs, 0);
-    return (cumulativeMs / totalExpectedMs) * 100;
-  };
+  // totalExpectedMs could be used for getPhasePosition calculation
+  // const totalExpectedMs = phaseConfigs.reduce((sum, p) => sum + p.expectedDurationMs, 0);
+  // getPhasePosition is not currently used but kept for future reference
+  // const getPhasePosition = (index: number): number => {
+  //   const cumulativeMs = phaseConfigs.slice(0, index).reduce((sum, p) => sum + p.expectedDurationMs, 0);
+  //   return (cumulativeMs / totalExpectedMs) * 100;
+  // };}
 
   // Calculate elapsed time fill bar position
   const getElapsedPosition = (): number => {
@@ -190,21 +200,10 @@ export const GlobalTimeline: React.FC = () => {
     return '#10b981'; // green
   };
 
-  // Handle phase navigation
+  // Handle phase navigation - FREE NAVIGATION (no locking)
   const handlePhaseClick = (targetPhase: SessionPhase) => {
-    const targetIndex = phaseConfigs.findIndex((p) => p.phase === targetPhase);
-
-    // Progressive navigation rules
-    if (targetIndex <= currentPhaseIndex) {
-      // Can always go back
-      setPhase(targetPhase);
-    } else if (targetIndex === currentPhaseIndex + 1) {
-      // Can go forward one
-      setPhase(targetPhase);
-    } else {
-      // Cannot skip ahead
-      addToast('Complete current phase before skipping ahead', 'warning', 3000);
-    }
+    setPhase(targetPhase);
+    addToast(`Navigated to ${phaseConfigs.find((p) => p.phase === targetPhase)?.label}`, 'info', 2000);
   };
 
   // Handle pause/resume
@@ -231,10 +230,8 @@ export const GlobalTimeline: React.FC = () => {
   const getPhaseState = (index: number) => {
     const isCompleted = index < currentPhaseIndex;
     const isCurrent = index === currentPhaseIndex;
-    const isNext = index === currentPhaseIndex + 1;
-    const isLocked = index > currentPhaseIndex + 1;
 
-    return { isCompleted, isCurrent, isNext, isLocked };
+    return { isCompleted, isCurrent };
   };
 
   const currentElapsedMs = getCurrentElapsedMs();
@@ -242,32 +239,54 @@ export const GlobalTimeline: React.FC = () => {
   const currentPhase = phaseConfigs[currentPhaseIndex];
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 bg-gray-900 bg-opacity-95 backdrop-blur-sm shadow-2xl z-40"
-      style={{ height: '48px' }}
-    >
-      <div className="relative h-full flex items-center px-6">
-        {/* Left Side: Time Display */}
-        <div className="flex items-center gap-3 text-white text-xs font-mono">
-          <span className="font-semibold tabular-nums">
-            {formatMs(currentElapsedMs)}
-          </span>
-          <span className="text-gray-400">/</span>
-          <span className="text-gray-400 tabular-nums">
-            {formatMs(expectedMs)}
-          </span>
-          {timerState.isPaused && (
-            <span className="ml-2 px-2 py-0.5 bg-yellow-500 bg-opacity-20 text-yellow-400 rounded text-[10px] font-bold">
-              PAUSED
-            </span>
-          )}
+    <div className="w-full bg-white border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Top Row: Timer and Controls */}
+        <div className="flex items-center justify-between mb-8">
+          {/* Left: Time Display */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-gray-700">
+              <span className="font-mono font-semibold text-lg">
+                {formatMs(currentElapsedMs)}
+              </span>
+              <span className="text-gray-400">/</span>
+              <span className="font-mono text-gray-600">
+                {formatMs(expectedMs)}
+              </span>
+            </div>
+            {timerState.isPaused && (
+              <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                PAUSED
+              </span>
+            )}
+          </div>
+
+          {/* Right: Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePauseResume}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title={timerState.isPaused ? 'Resume' : 'Pause'}
+            >
+              {timerState.isPaused ? (
+                <Play className="w-5 h-5 text-gray-600" />
+              ) : (
+                <Pause className="w-5 h-5 text-gray-600" />
+              )}
+            </button>
+            <button
+              onClick={handleReset}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Reset"
+            >
+              <RotateCcw className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
         </div>
 
-        {/* Center: Progress Bar with Phase Markers */}
-        <div className="flex-1 mx-6 relative" style={{ height: '4px' }}>
-          {/* Background Track */}
-          <div className="absolute inset-0 bg-white bg-opacity-20 rounded-full overflow-hidden">
-            {/* Elapsed Time Fill */}
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full transition-all duration-300 rounded-full"
               style={{
@@ -276,72 +295,31 @@ export const GlobalTimeline: React.FC = () => {
               }}
             />
           </div>
+        </div>
 
-          {/* Phase Markers */}
+        {/* Phase Markers */}
+        <div className="flex items-end justify-between gap-4">
           {phaseConfigs.map((config, index) => {
-            const position = getPhasePosition(index);
-            const { isCompleted, isCurrent, isNext, isLocked } = getPhaseState(index);
-            const completedTimeMs = (state as any).phaseCompletionTimes?.[config.phase];
+            const { isCompleted, isCurrent } = getPhaseState(index);
 
             return (
-              <PhaseMarker
-                key={config.phase}
-                config={config}
-                position={position}
-                isCompleted={isCompleted}
-                isCurrent={isCurrent}
-                isNext={isNext}
-                isLocked={isLocked}
-                onClick={() => handlePhaseClick(config.phase)}
-                completedTimeMs={completedTimeMs}
-              />
+              <div key={config.phase} className="flex-1 flex justify-center relative">
+                <PhaseMarker
+                  config={config}
+                  isCompleted={isCompleted}
+                  isCurrent={isCurrent}
+                  onClick={() => handlePhaseClick(config.phase)}
+                />
+              </div>
             );
           })}
         </div>
 
-        {/* Right Side: Current Phase & Controls */}
-        <div className="flex items-center gap-3">
-          {/* Current Phase */}
-          <div className="text-white text-xs font-medium">
-            {currentPhase?.label || 'Workshop'}
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handlePauseResume}
-              className="w-7 h-7 flex items-center justify-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white rounded transition-colors"
-              aria-label={timerState.isPaused ? 'Resume timer' : 'Pause timer'}
-              title={timerState.isPaused ? 'Resume' : 'Pause'}
-            >
-              {timerState.isPaused ? (
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              ) : (
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-            </button>
-
-            <button
-              onClick={handleReset}
-              className="w-7 h-7 flex items-center justify-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white rounded transition-colors text-[10px] font-bold"
-              aria-label="Reset timer"
-              title="Reset"
-            >
-              ↻
-            </button>
-          </div>
+        {/* Current Phase Label */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Current Phase: <span className="font-semibold text-gray-900">{currentPhase?.label}</span>
+          </p>
         </div>
       </div>
     </div>

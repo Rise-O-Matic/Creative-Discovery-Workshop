@@ -60,17 +60,16 @@ function PhaseRouter() {
 
 function AppContent() {
   const { state } = useSession();
-
-  // Don't show timeline on welcome/project-context phase
-  const showTimeline = state.currentPhase !== 'project-context';
+  // Timeline is always shown, state is used by PhaseRouter
+  const showTimeline = !!state;
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Global Timeline Bar */}
+      {/* Global Timeline Bar at Top */}
       {showTimeline && <GlobalTimeline />}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-gray-50">
         <PhaseRouter />
       </div>
 
