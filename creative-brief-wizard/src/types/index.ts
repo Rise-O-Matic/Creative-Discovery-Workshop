@@ -64,6 +64,7 @@ export interface GranularQuestion {
   question: string;
   placeholder?: string;
   answer: string;
+  rationale?: string;
 }
 
 export interface DiscoveryQuestion {

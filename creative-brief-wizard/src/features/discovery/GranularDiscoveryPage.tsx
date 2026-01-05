@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSession } from '../../hooks/useSession';
+import { Info } from 'lucide-react';
 // import type { GranularQuestion } from '../../types';
 
 export const GranularDiscoveryPage: React.FC = () => {
@@ -110,7 +111,23 @@ export const GranularDiscoveryPage: React.FC = () => {
 
         {/* Question */}
         <div className="mb-8 fade-in">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">{currentQuestion.question}</h2>
+          <div className="flex items-start gap-3 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 flex-1">{currentQuestion.question}</h2>
+            {currentQuestion.rationale && (
+              <div className="group relative">
+                <button
+                  type="button"
+                  className="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded-lg hover:bg-blue-50"
+                  aria-label="Why this question matters"
+                >
+                  <Info className="w-5 h-5" />
+                </button>
+                <div className="absolute right-0 top-full mt-2 w-80 p-4 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                  <p className="text-sm text-gray-700 leading-relaxed">{currentQuestion.rationale}</p>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Answer Textarea */}
           <div className="mb-6">
