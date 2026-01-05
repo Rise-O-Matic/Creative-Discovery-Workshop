@@ -4,7 +4,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { MeetingTimerProvider } from './contexts/MeetingTimerContext';
 import { useSession } from './hooks/useSession';
 import { WelcomePage } from './features/welcome/WelcomePage';
-import { CustomerDiscoveryPage } from './features/discovery/CustomerDiscoveryPage';
+import { GranularDiscoveryPage } from './features/discovery/GranularDiscoveryPage';
 // Sticky notes phases temporarily shelved
 // import { DivergePage } from './features/diverge/DivergePage';
 // import { ConvergePage } from './features/converge/ConvergePage';
@@ -23,7 +23,7 @@ function PhaseRouter() {
     case 'project-context':
       return <WelcomePage />;
     case 'customer-discovery':
-      return <CustomerDiscoveryPage />;
+      return <GranularDiscoveryPage />;
     // Sticky notes phases temporarily shelved
     // case 'sticky-notes-diverge':
     //   return <DivergePage />;

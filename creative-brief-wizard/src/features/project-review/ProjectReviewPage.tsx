@@ -11,7 +11,7 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
-import type { ProjectContext, FieldMetadata } from '../../types';
+import type { ProjectContext } from '../../types';
 
 /**
  * Project Review Page - Review and edit AI-generated project context

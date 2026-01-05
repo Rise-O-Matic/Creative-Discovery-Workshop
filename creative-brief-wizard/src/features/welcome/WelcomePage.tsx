@@ -9,13 +9,11 @@ import { AdvancedWizard } from './AdvancedWizard';
  * Inspired by modern AI tools like ChatGPT, Gemini, and Figma Make
  */
 export function WelcomePage() {
-  const { state, updateProjectContext, updateCustomerDiscovery, addStickyNote, setPhase } = useSession();
+  const { state, updateProjectContext, updateCustomerDiscovery, setPhase } = useSession();
   const [projectPrompt, setProjectPrompt] = useState('');
-  const [duration, setDuration] = useState(60);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showWizard, setShowWizard] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
 
   const handleBegin = () => {
     // Open wizard with the prompt
@@ -58,13 +56,6 @@ export function WelcomePage() {
         updateCustomerDiscovery(updates.customerDiscovery);
       }
       
-      if (updates.stickyNotesDiverge && updates.stickyNotesDiverge.notes) {
-        // Add each sticky note individually
-        updates.stickyNotesDiverge.notes.forEach((note) => {
-          addStickyNote(note);
-        });
-      }
-      
       // Navigate to discovery phase
       setPhase('customer-discovery');
     } catch (err) {
@@ -98,7 +89,6 @@ export function WelcomePage() {
             </div>
             <span className="font-semibold text-gray-900">Creative Discovery Workshop</span>
           </div>
-
         </div>
       </header>
 
@@ -148,26 +138,6 @@ export function WelcomePage() {
                 </p>
               </div>
             )}
-
-            {/* Duration Selector (Simple) */}
-            {!isGenerating && (
-              <div className="mt-4 flex items-center justify-center gap-2">
-                <label className="text-sm text-gray-600">Workshop duration:</label>
-                <select
-                  value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value))}
-                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
-                >
-                  <option value={30}>30 minutes</option>
-                  <option value={45}>45 minutes</option>
-                  <option value={60}>60 minutes</option>
-                  <option value={90}>90 minutes</option>
-                  <option value={120}>2 hours</option>
-                </select>
-              </div>
-            )}
-
-
 
             {/* Action Button */}
             <div className="mt-6 flex justify-center">

@@ -154,7 +154,7 @@ export const GlobalTimeline: React.FC = () => {
     resumeMeeting,
     resetMeeting,
     getCurrentElapsedMs,
-    getPhaseElapsedMs,
+    // getPhaseElapsedMs,
     getPacingStatus,
   } = useMeetingTimer();
   const { formatMs, getProgressPercentage } = useFormattedTime();
@@ -281,7 +281,7 @@ export const GlobalTimeline: React.FC = () => {
           {phaseConfigs.map((config, index) => {
             const position = getPhasePosition(index);
             const { isCompleted, isCurrent, isNext, isLocked } = getPhaseState(index);
-            const completedTimeMs = state.phaseCompletionTimes?.[config.phase];
+            const completedTimeMs = (state as any).phaseCompletionTimes?.[config.phase];
 
             return (
               <PhaseMarker

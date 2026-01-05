@@ -7,16 +7,16 @@
 export type SessionPhase =
   | 'ai-prompt'
   | 'project-review'
+  | 'project-context'
   | 'customer-discovery'
-  | 'stakeholders'
+  | 'prioritization'
+  | 'synthesis-review'
+  | 'brief-complete'
   | 'sticky-notes-diverge'
   | 'sticky-notes-converge'
   | 'sticky-notes-naming'
   | 'sticky-notes-synthesis'
-  | 'spot-exercises'
-  | 'prioritization'
-  | 'synthesis-review'
-  | 'brief-complete';
+  | 'spot-exercises';
 
 export type LLMProvider = 'openai' | 'anthropic';
 
@@ -59,15 +59,23 @@ export interface StickyNoteExercise {
 // Discovery Questions
 // ============================================================================
 
+export interface GranularQuestion {
+  id: string;
+  question: string;
+  placeholder?: string;
+  answer: string;
+}
+
 export interface DiscoveryQuestion {
   id: string;
   question: string;
   prompts: string[];
-  timeLimit: number; // in seconds
+  timeLimit: number;
   answer: string;
 }
 
 export interface CustomerDiscovery {
+  granularQuestions: GranularQuestion[];
   whoIsThisFor: DiscoveryQuestion;
   whatIsBeingOffered: DiscoveryQuestion;
   whyNow: DiscoveryQuestion;
