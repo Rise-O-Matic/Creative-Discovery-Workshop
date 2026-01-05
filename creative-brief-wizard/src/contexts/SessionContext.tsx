@@ -14,6 +14,7 @@ import type {
   SpotExercises,
 } from '../types';
 import { loadSession, saveSession } from '../utils/storage';
+import { GRANULAR_QUESTIONS } from '../data/granularQuestions';
 
 // ============================================================================
 // Context Value Type
@@ -125,27 +126,7 @@ function createDefaultState(): SessionState {
       userEdits: [],
     },
     customerDiscovery: {
-      granularQuestions: [
-        { id: 'aud-1', question: 'Who is your primary audience?', placeholder: 'e.g., busy professionals aged 25-45', answer: '' },
-        { id: 'aud-2', question: 'Are there secondary audiences?', placeholder: 'e.g., business decision-makers', answer: '' },
-        { id: 'aud-3', question: 'What age range and profession?', placeholder: 'e.g., 25-45, tech professionals', answer: '' },
-        { id: 'aud-4', question: 'What do they value most?', placeholder: 'e.g., efficiency, innovation, reliability', answer: '' },
-        { id: 'aud-5', question: 'Where do they spend their time?', placeholder: 'e.g., LinkedIn, conferences, podcasts', answer: '' },
-        { id: 'off-1', question: 'What are you offering?', placeholder: 'e.g., software, service, event', answer: '' },
-        { id: 'off-2', question: 'What makes it different?', placeholder: 'e.g., unique features, approach', answer: '' },
-        { id: 'off-3', question: 'What is the core benefit?', placeholder: 'e.g., saves time, reduces costs', answer: '' },
-        { id: 'off-4', question: 'What problem does it solve?', placeholder: 'e.g., reduces manual work', answer: '' },
-        { id: 'off-5', question: 'Describe it in one sentence?', placeholder: 'Your elevator pitch', answer: '' },
-        { id: 'time-1', question: 'Why now? What is the urgency?', placeholder: 'e.g., market shift, competition', answer: '' },
-        { id: 'time-2', question: 'Is there a specific deadline?', placeholder: 'e.g., Q2 launch, event date', answer: '' },
-        { id: 'time-3', question: 'What happens if you wait?', placeholder: 'e.g., lose market share', answer: '' },
-        { id: 'time-4', question: 'Seasonal or cultural factors?', placeholder: 'e.g., holiday season, event', answer: '' },
-        { id: 'succ-1', question: 'How will you measure success?', placeholder: 'e.g., 10K users, 50% conversion', answer: '' },
-        { id: 'succ-2', question: 'What does short-term success look like?', placeholder: 'e.g., first week metrics', answer: '' },
-        { id: 'succ-3', question: 'What about long-term success?', placeholder: 'e.g., 6 months, 1 year goals', answer: '' },
-        { id: 'succ-4', question: 'What would failure look like?', placeholder: 'e.g., less than 5% adoption', answer: '' },
-        { id: 'succ-5', question: 'Who declares success?', placeholder: 'e.g., CEO, customers, analysts', answer: '' },
-      ],
+      granularQuestions: GRANULAR_QUESTIONS,
       whoIsThisFor: {
         id: 'who-is-this-for',
         question: "Let's start with your audience. Who is this really for?",
