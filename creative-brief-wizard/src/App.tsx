@@ -72,9 +72,15 @@ function AppContent() {
       {/* Global Timeline Bar at Top */}
       {showTimeline && <GlobalTimeline />}
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-gray-50">
-        <PhaseRouter />
+      {/* Main Content Area with Canvas */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto bg-gray-50">
+          <PhaseRouter />
+        </div>
+
+        {/* Brief Canvas (shown after welcome page) */}
+        {showBriefCanvas && <BriefCanvas />}
       </div>
 
       {/* Toast Notifications */}
@@ -85,9 +91,6 @@ function AppContent() {
 
       {/* Version Number */}
       <Version />
-
-      {/* Brief Canvas (shown after welcome page) */}
-      {showBriefCanvas && <BriefCanvas />}
     </div>
   );
 }

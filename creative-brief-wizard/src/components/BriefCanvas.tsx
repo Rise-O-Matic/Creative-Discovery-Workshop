@@ -111,7 +111,7 @@ export const BriefCanvas: React.FC = () => {
   }
 
   return (
-    <div className="fixed right-0 top-16 bottom-0 w-96 bg-white border-l border-gray-200 shadow-xl z-30 flex flex-col">
+    <div className="w-96 bg-white border-l border-gray-200 shadow-xl flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
         <h3 className="font-semibold text-gray-900">Creative Brief Preview</h3>
