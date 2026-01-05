@@ -6,11 +6,27 @@ export const GranularDiscoveryPage: React.FC = () => {
   const { state, updateCustomerDiscovery, nextPhase } = useSession();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  const questions = state.customerDiscovery.granularQuestions;
+  const questions = state.customerDiscovery.granularQuestions || [];
   const currentQuestion = questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const answeredCount = questions.filter((q) => q.answer.trim().length > 0).length;
-  const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const isLastQuestion = questions.length > 0 ? currentQuestionIndex === questions.length - 1 : true;
+  const answeredCount = questions.filter((q) => q.answer && q.answer.trim().length > 0).length;
+  const progressPercent = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
+
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Loading questions...</h1>
+          <button 
+            onClick={() => nextPhase()}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+          >
+            Skip to next phase
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Get section label for current question
   const getSectionLabel = (questionId: string): string => {

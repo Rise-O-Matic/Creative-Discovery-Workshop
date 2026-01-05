@@ -42,7 +42,16 @@ function PhaseRouter() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Phase: {state.currentPhase}</h1>
-            <p className="text-gray-600">This phase is not yet implemented.</p>
+            <p className="text-gray-600 mb-6">This phase is not yet implemented or an error occurred.</p>
+            <button 
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Reset Application
+            </button>
           </div>
         </div>
       );

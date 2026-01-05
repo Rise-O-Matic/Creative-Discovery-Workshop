@@ -253,8 +253,13 @@ export const SessionContext = createContext<SessionContextValue | undefined>(und
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<SessionState>(() => {
-    const loaded = loadSession();
-    return loaded || createDefaultState();
+    const saved = loadSession();
+    // Defensive check: ensure saved state has granularQuestions if we're in discovery
+    if (saved && saved.currentPhase === 'customer-discovery' && (!saved.customerDiscovery || !saved.customerDiscovery.granularQuestions)) {
+      console.warn('Detected corrupted session state, resetting to default');
+      return createDefaultState();
+    }
+    return saved || createDefaultState();
   });
 
   // Auto-save on state changes
